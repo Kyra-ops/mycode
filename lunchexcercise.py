@@ -11,7 +11,7 @@ def main():
     api = "http://pokeapi.co/api/v2/pokemon/"   # <--- you have to fill in this!
 
     # sent HTTP GET and create resp, a response object
-    resp = requests.get(api + pokemon)
+    resp = requestsa1
 
     # respdata is the JSON attached to our 200+JSON response
     # converted to pythonic list and dictonaries
