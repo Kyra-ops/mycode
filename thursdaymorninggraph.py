@@ -1,55 +1,76 @@
+#!/usr/bin/python3
+""" Fill this in :) """
+
+# for graphing
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+
 # required to make HTTP requests
 import requests
 
+
+# pull in API keys
+def apikey():
+    #place your APIkey within /home/student/alphavantage.cred
+    with open("/home/student/alphavantage.cred", "r") as nc:
+        apikey = nc.readline()
+        return apikey.rstrip("/n")   # remove any "extra" characters
+
 def main():
-function=TIME_SERIES_INTRADAY
-symbol=DKNG, AAPL, NKE, TMUS, IBM
-interval=5min
-outputsize=compact
-    # api goes here
-    # example:
-    # api = http://api.open-notify.org/astros.json
-    api = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=DKNG&interval=5min&apikey=IXLGYNLS1XWYB6NU"
-    api =  "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AAPL&interval=5min&apikey=IXLGYNLS1XWYB6NU" # <--- you have to fill in this!
-    api =  "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=NKE&interval=5min&apikey=IXLGYNLS1XWYB6NU"
-    api =  "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=TMUS&interval=5min&apikey=IXLGYNLS1XWYB6NU"
-    api =  "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=IXLGYNLS1XWYB6NU"
+    """run-time code"""
 
-    
-    # sent HTTP GET and create resp, a response object
-    resp = requests.get(api)
+    # stock labels to search on via a loop
+    # labels = ['DKNG', 'AAPL', 'NKE', 'TMUS', 'IBM']  
+    labels = ['AAPL', 'NKE', 'TMUS', 'IBM']
+    stockhigh = [] # seed an empty list
+    stocklow = []  # seed an empyt list
 
-    # respdata is the JSON attached to our 200+JSON response
-    # converted to pythonic list and dictonaries
-    respdata = resp.json()
+    for label in labels:
+        api = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={label}&apikey={apikey()}"
+        # example:
+        # api = http://api.open-notify.org/astros.json
+        #apiDKNG = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=DKNG&apikey={apikey()}"
+        #apiAAPL =  f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey={apikey()}" # <--- you have to fill in this!
+        #apiNKE =  f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=NKE&apikey={apikey()}"
+        #apiTMUS =  f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=TMUS&apikey={apikey()}"
 
-    # display ALL of the data we captured
-    print(respdata)
+        resp = requests.get(api)
+        # respdata is the JSON attached to our 200+JSON response
+        # converted to pythonic list and dictonaries
+        quotedata = resp.json() # strip off our response)
 
-labels = ['DKNG', 'AAPL', 'NKE', 'TMUS', 'IBM']
-January = [20, 34, 30, 35, 27]
-April = [25, 32, 34, 20, 25]
+        # add caputred data to our lists for graphing
+        stockhigh.append(quotedata.get("Global Quote").get("03. high"))
+        stocklow.append(quotedata.get("Global Quote").get("04. low"))
 
-x = np.arange(len(labels))  # the label locations
-width = 0.35  # the width of the bars
 
-fig, ax = plt.subplots()
-rects1 = ax.bar(x - width/2, men_means, width, label='Open')
-rects2 = ax.bar(x + width/2, women_means, width, label='Close')
+    print(labels)
+    print(stockhigh)
+    print(stocklow)
+    x = np.arange(len(labels))  # the label locations
+    width = 0.35  # the width of the bars
 
-# Add some text for labels, title and custom x-axis tick labels, etc.
-ax.set_ylabel('Cost')
-ax.set_title('Price by Open and Close')
-ax.set_xticks(x)
-ax.set_xticklabels(labels)
-ax.legend()
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width/2, stockhigh, width, label='High Price')
+    rects2 = ax.bar(x + width/2, stocklow, width, label='Low Price')
 
-ax.bar_label(rects1, padding=3)
-ax.bar_label(rects2, padding=3)
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('Price is USD')
+    ax.set_title('High and Low Price by Stock Label')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
 
-fig.tight_layout()
+    #ax.bar_label(rects1, padding=1)
+    #ax.bar_label(rects2, padding=1)
 
-plt.show()
+    fig.tight_layout()
+
+    # save out graph
+    plt.savefig("/home/student/static/mygraph.png")
+
+if __name__ == "__main__":
+    main()
+
